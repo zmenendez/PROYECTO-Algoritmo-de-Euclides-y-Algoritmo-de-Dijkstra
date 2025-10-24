@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proyecto Euclides & Dijkstra — Versión 5</title>
+
+  <style>
+    :root {
+      --orange: #FF8400;
+      --vista: #8FA0D8;
+      --amande: #F9DFC6;
+      --oxford: #0B0829;
+      --panel-bg: #0c0a2f;
+      --panel-border: #6e7ec5;
+      --muted: #A7B0D8;
+      --car-base: #E63946;
+      --car-glass: #141824;
+      --car-wheel: #0e0e10;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      background: radial-gradient(1200px 800px at 50% 10%, #0e0b34 0%, var(--oxford) 55%);
+      color: var(--amande);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(90deg, var(--orange), #ffa64d);
+      color: #120d2e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .8rem;
+      padding: .8rem 1rem;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header a {
+      color: #120d2e;
+      text-decoration: none;
+      font-weight: 900
+    }
+
+    .header-right {
+      display: flex;
+      gap: .5rem;
+      align-items: center
+    }
+
+    .badge {
+      background: #120d2e;
+      color: #ffead0;
+      border-radius: 999px;
+      padding: .2rem .6rem;
+      font-size: .8rem;
+      font-weight: 800
+    }
+
+    /* Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    @media(max-width:1100px) {
+      main {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* Panel */
+    .panel {
+      background: linear-gradient(180deg, var(--panel-bg), #08071e 85%);
+      border: 2px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .9rem;
+    }
+
+    .panel h2 {
+      color: var(--orange);
+      font-size: 1.05rem;
+      text-align: center;
+      letter-spacing: .4px
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem
+    }
+
+    .btn {
+      background: var(--orange);
+      color: #120d2e;
+      border: none;
+      border-radius: 10px;
+      padding: .5rem .8rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #c66c00;
+      transition: transform .05s ease
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--panel-border);
+      color: var(--vista);
+      box-shadow: none
+    }
+
+    .btn.danger {
+      background: #ff5d5d;
+      color: #fff;
+      box-shadow: 0 2px 0 #cc3c3c
+    }
+
+    .btn.smol {
+      padding: .35rem .6rem;
+      font-size: .9rem
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: transparent;
+      border: 1px solid var(--panel-border);
+      color: var(--vista);
+      border-radius: 999px;
+      padding: .3rem .6rem;
+      font-weight: 800;
+      cursor: pointer
+    }
+
+    input,
+    select {
+      background: #0c1030;
+      color: var(--amande);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: .4rem .55rem
+    }
+
+    .range {
+      accent-color: var(--orange)
+    }
+
+    /* Canvas / SVG */
+    .canvas {
+      background: linear-gradient(180deg, #0c0a2f 0%, #0b0829 60%);
+      border: 2px solid var(--panel-border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative
+    }
+
+    #graph {
+      width: 100%;
+      height: 74vh;
+      min-height: 520px;
+      display: block;
+      background: transparent
+    }
+
+    /* Nodos y aristas */
+    .edge {
+      stroke: #cfe0ff;
+      stroke-opacity: .9;
+      stroke-width: 2
+    }
+
+    .edge.highlight {
+      stroke: var(--orange);
+      stroke-width: 4;
+      filter: drop-shadow(0 0 6px rgba(255, 132, 0, .45))
+    }
+
+    .node {
+      fill: var(--vista);
+      stroke: var(--orange);
+      stroke-width: 2;
+      cursor: pointer;
+      filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .5))
+    }
+
+    .node.selected {
+      fill: var(--orange);
+      stroke: var(--vista)
+    }
+
+    .node-label {
+      fill: #0e0b34;
+      font-weight: 900;
+      pointer-events: none
+    }
+
+    .weight-chip {
+      fill: #0b0f2c;
+      stroke: #6b79c6;
+      rx: 6;
+      ry: 6
+    }
+
+    .weight-text {
+      fill: #e6edff;
+      font-weight: 800
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -130%);
+      background: #101438;
+      border: 1px solid #5f6fbf;
+      color: #e9f0ff;
+      padding: .25rem .5rem;
+      border-radius: 8px;
+      font-size: .85rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .12s ease;
+      z-index: 22
+    }
+
+    /* Paso a paso */
+    #final-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .6);
+      color: #f7f9ff;
+      font-weight: 900;
+      font-size: 1.25rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+      z-index: 50
+    }
+
+    #final-message.visible {
+      opacity: 1
+    }
+
+    #stepper {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: min(420px, 95%);
+      max-height: 52%;
+      display: none;
+      flex-direction: column;
+      gap: .5rem;
+      padding: .6rem .7rem;
+      background: #0b0f2c;
+      border: 1px solid #5f6fbf;
+      border-radius: 12px;
+      z-index: 40;
+      overflow: auto
+    }
+
+    #stepper.visible {
+      display: flex
+    }
+
+    .stepper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .stepper-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem
+    }
+
+    .stepper-table th,
+    .stepper-table td {
+      border: 1px solid #3f4d9a;
+      padding: .25rem .35rem;
+      text-align: center
+    }
+
+    .stepper-table th {
+      background: #15205a;
+      color: #e9f0ff;
+      position: sticky;
+      top: 0
+    }
+
+    /* Topbar canvas */
+    #canvas-topbar {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      display: flex;
+      gap: .4rem;
+      z-index: 30;
+      flex-wrap: wrap
+    }
+
+    .chip {
+      background: #0b0f2c;
+      color: #dfe6ff;
+      border: 1px solid #5f6fbf;
+      border-radius: 999px;
+      padding: .25rem .6rem;
+      font-size: .8rem;
+      font-weight: 800
+    }
+
+    /* Presentación */
+    body.presentation main {
+      grid-template-columns: 1fr
+    }
+
+    body.presentation .panel {
+      display: none
+    }
+
+    body.presentation .canvas {
+      border-color: #7ea2ff
+    }
+
+    /* Avatares */
+    .car-neon {
+      opacity: .45;
+      filter: blur(4px)
+    }
+
+    .car-window {
+      fill: var(--car-glass)
+    }
+
+    .car-body {
+      stroke: #1b0d11;
+      stroke-width: 1.2
+    }
+
+    .car-wheel {
+      fill: var(--car-wheel)
+    }
+
+    .car-spoiler {
+      fill: rgba(0, 0, 0, .35)
+    }
+
+    .person-head {
+      fill: #ffdfb0
+    }
+
+    .person-body {
+      stroke: #eae6ff;
+      stroke-width: 2
+    }
+
+    .bike-wheel {
+      fill: #222
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="index.html">🏠 Home</a>
+    <div class="header-right">
+      <span>Proyecto Euclides & Dijkstra — Versión 5</span>
+      <span class="badge">Interactivo + Educativo</span>
+    </div>
+  </header>
+
+  <main>
+    <aside class="panel">
+      <section class="section">
+        <h2>Editar grafo</h2>
+        <div class="row">
+          <button id="mode-add" class="btn smol">➕ Nodo</button>
+          <button id="mode-connect" class="btn smol">🔗 Conectar</button>
+          <button id="mode-move" class="btn smol">🖐️ Mover</button>
+          <button id="mode-delete" class="btn smol ghost">🗑 Eliminar</button>
+        </div>
+        <div class="row">
+          <button id="btn-directed" class="toggle" aria-pressed="false">No dirigido</button>
+          <button id="btn-help" class="btn smol ghost">❔ Ayuda</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Grafo aleatorio</h2>
+        <div class="row">
+          <label class="subtle">Nodos (2–26)</label>
+          <input id="rand-n" type="number" min="2" max="26" value="10" style="width:84px">
+          <label class="subtle">Prob. arista (0–1)</label>
+          <input id="rand-p" type="number" min="0" max="1" step="0.05" value="0.55" style="width:96px">
+        </div>
+        <div class="row">
+          <button id="btn-random" class="btn smol">🎲 Generar</button>
+          <button id="btn-clear" class="btn smol ghost">↺ Limpiar</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Rutas y animación</h2>
+        <div class="row">
+          <label>Inicio:</label><select id="start"></select>
+          <label>Fin:</label><select id="end"></select>
+        </div>
+
+        <!-- Modo de viaje -->
+        <div class="row">
+          <span class="subtle">Modo:</span>
+          <button id="mode-walk" class="toggle" aria-pressed="true">🚶 A pie</button>
+          <button id="mode-bike" class="toggle" aria-pressed="false">🚴 Bici</button>
+          <button id="mode-car" class="toggle" aria-pressed="false">🚗 Auto</button>
+        </div>
+
+        <div class="row">
+          <button id="btn-calc" class="btn smol">Calcular ruta(s)</button>
+          <button id="btn-present" class="btn smol ghost" aria-pressed="false"></button>
+        </div>
+        <div class="row">
+          <span class="subtle">Velocidad:</span>
+          <input id="speed" type="range" min="40" max="300" step="10" value="160" class="range">
+          <span id="speed-label" class="subtle">1.6×</span>
+          <button id="btn-recenter" class="btn smol ghost"></button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Mapas (guardar / cargar)</h2>
+        <div id="saved-list" class="list subtle"></div>
+        <div class="row">
+          <button id="btn-save-map" class="btn smol">💾 Guardar</button>
+          <button id="btn-load-map" class="btn smol">📂 Cargar</button>
+          <button id="btn-export-png" class="btn smol ghost">🖼 PNG</button>
+          <button id="btn-export-svg" class="btn smol ghost">🧩 SVG</button>
+          <button id="btn-clear-maps" class="btn smol danger">🗑 Borrar</button>
+        </div>
+        <input id="map-file" type="file" accept=".json,application/json" style="display:none">
+      </section>
+
+      <section class="section">
+        <h2>Estadísticas</h2>
+        <div class="stack subtle" id="stats">
+          <div>Nodos: <b id="stat-nodes">0</b> · Aristas: <b id="stat-edges">0</b></div>
+          <div>Densidad: <b id="stat-density">0%</b> · Peso medio: <b id="stat-avg">—</b></div>
+          <div id="connectivity" class="subtle">Conectividad: —</div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="canvas" id="canvas">
+      <div id="canvas-topbar">
+        <span class="chip">Zoom: <b id="chip-zoom">100%</b></span>
+        <span class="chip">Pos: <b id="chip-pos">0,0</b></span>
+      </div>
+      <div id="tooltip"></div>
+      <svg id="graph" viewBox="0 0 1200 720" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="final-message">🚗💨 Todas las rutas completadas correctamente ✅</div>
+
+      <div id="stepper">
+        <div class="stepper-header">
+          <strong>🧭 Dijkstra — Paso a paso</strong>
+          <div class="row">
+            <button id="step-prev" class="btn smol ghost">⟨ Anterior</button>
+            <button id="step-next" class="btn smol">Siguiente ⟩</button>
+            <button id="step-close" class="btn smol danger">✕</button>
+          </div>
+        </div>
+        <div class="subtle">Nodo actual: <b id="step-current">—</b> · Cola: <b id="step-queue">[]</b></div>
+        <table class="stepper-table" id="step-table">
+          <thead>
+            <tr>
+              <th>Nodo</th>
+              <th>dist</th>
+              <th>prev</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2025 — Dijkstra Interactivo V5</footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // ===== Vars / refs =====
+      const svg = document.getElementById("graph"),
+        canvas = document.getElementById("canvas"),
+        tooltip = document.getElementById("tooltip"),
+        speedRange = document.getElementById("speed"),
+        speedLabel = document.getElementById("speed-label");
+
+      let nodes = [], edges = [], nextChar = "A";
+      let mode = "add", directed = false;
+      let selectedNode = null, connectFirst = null;
+      let movers = [], animSpeed = 160;
+      let zoom = 1, panX = 0, panY = 0;
+
+      // === Modo de viaje ===
+      let travelMode = "walk"; // walk | bike | car
+      const perHopMinutes = { walk: 15, bike: 10, car: 5 };     // tiempo por salto (nodo→nodo)
+      const speedScale = { walk: 0.7, bike: 1.0, car: 1.7 }; // factor de animación
+      const COLORS = ["#E63946", "#1E90FF", "#2ECC71", "#F1C40F", "#9B59B6", "#FF69B4", "#2E8B57", "#00FFFF", "#E67E22", "#40E0D0"];
+
+      function setTravelMode(m) {
+        travelMode = m;
+        document.getElementById("mode-walk").setAttribute("aria-pressed", m === "walk");
+        document.getElementById("mode-bike").setAttribute("aria-pressed", m === "bike");
+        document.getElementById("mode-car").setAttribute("aria-pressed", m === "car");
+      }
+      document.getElementById("mode-walk").onclick = () => setTravelMode("walk");
+      document.getElementById("mode-bike").onclick = () => setTravelMode("bike");
+      document.getElementById("mode-car").onclick = () => setTravelMode("car");
+
+      // ===== Helpers =====
+      function el(tag, attrs = {}) { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; }
+      function byId(id) { return nodes.find(n => n.id === id); }
+      function eid(a, b) { return a < b ? `${a}-${b}` : `${b}-${a}`; }
+      function svgPoint(ev) { const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+      function updateStats() {
+        const n = nodes.length, e = edges.length;
+        const density = (n > 1 ? ((2 * e) / (n * (n - 1))) * 100 : 0).toFixed(1);
+        const avg = e ? (edges.reduce((a, b) => a + b.w, 0) / e).toFixed(1) : "—";
+        document.getElementById("stat-nodes").textContent = n;
+        document.getElementById("stat-edges").textContent = e;
+        document.getElementById("stat-density").textContent = density + "%";
+        document.getElementById("stat-avg").textContent = avg;
+      }
+      function updateSelects() {
+        const opts = nodes.length ? nodes.map(n => `<option>${n.id}</option>`).join("") : `<option value="">(sin nodos)</option>`;
+        document.getElementById("start").innerHTML = opts;
+        document.getElementById("end").innerHTML = opts;
+      }
+      function calcNextChar(list) {
+        const used = new Set((list || nodes).map(n => n.id));
+        for (let code = 65; code <= 90; code++) {
+          const ch = String.fromCharCode(code);
+          if (!used.has(ch)) return ch;
+        }
+        return "Z";
+      }
+
+      // ===== Dibujar =====
+      function draw() {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        // edges
+        for (const e of edges) {
+          const u = byId(e.u), v = byId(e.v); if (!u || !v) continue;
+          const g = el("g");
+          const line = el("line", { x1: u.x, y1: u.y, x2: v.x, y2: v.y, class: "edge" });
+          if (directed) line.setAttribute("marker-end", "url(#arrow)");
+          line.addEventListener("mousemove", ev => {
+            tooltip.style.opacity = 1; tooltip.style.left = ev.pageX + "px"; tooltip.style.top = ev.pageY + "px";
+            tooltip.textContent = `${e.u}–${e.v}: ${e.w}`;
+          });
+          line.addEventListener("mouseleave", () => tooltip.style.opacity = 0);
+          line.addEventListener("dblclick", () => { const w = prompt(`Peso ${e.u}-${e.v}:`, e.w); if (w && !isNaN(w)) { e.w = +w; draw(); } });
+          line.addEventListener("contextmenu", ev => { ev.preventDefault(); edges = edges.filter(x => x.id !== e.id); draw(); });
+          g.append(line);
+          const mx = (u.x + v.x) / 2, my = (u.y + v.y) / 2;
+          g.append(
+            el("rect", { x: mx - 14, y: my - 10, width: 28, height: 20, class: "weight-chip" }),
+            el("text", { x: mx, y: my + 5, "text-anchor": "middle", class: "weight-text" })
+          );
+          g.lastChild.textContent = e.w;
+          svg.appendChild(g);
+        }
+        // nodes
+        for (const n of nodes) {
+          const g = el("g", { transform: `translate(${n.x},${n.y})` });
+          const c = el("circle", { r: 22, class: "node" });
+          const t = el("text", { y: 5, "text-anchor": "middle", class: "node-label" }); t.textContent = n.id;
+
+          g.addEventListener("mousedown", () => {
+            if (mode === "move") selectedNode = n;
+            else if (mode === "connect") {
+              if (!connectFirst) connectFirst = n;
+              else {
+                if (connectFirst.id !== n.id) {
+                  const id = eid(connectFirst.id, n.id);
+                  if (!edges.find(e => e.id === id)) {
+                    const w = prompt(`Peso ${connectFirst.id}-${n.id}:`, Math.floor(Math.random() * 10 + 1));
+                    if (w && !isNaN(w)) edges.push({ id, u: connectFirst.id, v: n.id, w: +w });
+                  }
+                }
+                connectFirst = null; draw();
+              }
+            } else if (mode === "delete") {
+              edges = edges.filter(e => e.u !== n.id && e.v !== n.id);
+              nodes = nodes.filter(x => x.id !== n.id);
+              updateSelects(); draw(); updateStats();
+            }
+          });
+          g.addEventListener("mouseup", () => selectedNode = null);
+          g.addEventListener("mousemove", ev => {
+            if (selectedNode && mode === "move") {
+              const p = svgPoint(ev); selectedNode.x = p.x; selectedNode.y = p.y; draw();
+            }
+          });
+          g.addEventListener("dblclick", () => {
+            const name = prompt("Nuevo nombre:", n.id);
+            if (name && !byId(name)) {
+              const old = n.id; n.id = name;
+              edges.forEach(e => { if (e.u === old) e.u = name; if (e.v === old) e.v = name; e.id = eid(e.u, e.v); });
+              updateSelects(); draw();
+            }
+          });
+
+          g.append(c, t); svg.appendChild(g);
+        }
+        // avatars
+        for (const m of movers) svg.appendChild(m.elem);
+
+        updateSelects();
+        updateStats();
+      }
+
+      // defs (flecha)
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      defs.innerHTML = `<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#cfe0ff"></path>
+  </marker>`;
+      svg.appendChild(defs);
+
+      // ===== Crear nodo con click vacío =====
+      svg.addEventListener("click", ev => {
+        if (mode !== "add") return;
+        const p = svgPoint(ev);
+        if (nextChar > "Z") return alert("Máximo 26 nodos (A–Z).");
+        nodes.push({ id: nextChar, x: p.x, y: p.y });
+        nextChar = String.fromCharCode(nextChar.charCodeAt(0) + 1);
+        draw();
+      });
+
+      // ===== Modos =====
+      document.getElementById("mode-add").onclick = () => mode = "add";
+      document.getElementById("mode-connect").onclick = () => mode = "connect";
+      document.getElementById("mode-move").onclick = () => mode = "move";
+      document.getElementById("mode-delete").onclick = () => mode = "delete";
+
+      // ===== Toggle dirigido =====
+      document.getElementById("btn-directed").onclick = (ev) => {
+        directed = !directed;
+        ev.target.textContent = directed ? "Dirigido" : "No dirigido";
+        ev.target.setAttribute("aria-pressed", directed);
+        draw();
+      };
+
+      // ===== Limpiar =====
+      document.getElementById("btn-clear").onclick = () => {
+        nodes = []; edges = []; nextChar = "A"; movers = [];
+        draw();
+      };
+
+      // ===== Grafo aleatorio =====
+      document.getElementById("btn-random").onclick = () => {
+        let N = Math.min(26, Math.max(2, +document.getElementById("rand-n").value || 10));
+        let P = Math.max(0, Math.min(1, +document.getElementById("rand-p").value || 0.55));
+        nodes = []; edges = []; nextChar = "A";
+        for (let i = 0; i < N; i++) nodes.push({ id: String.fromCharCode(65 + i), x: 100 + Math.random() * 1000, y: 80 + Math.random() * 560 });
+        for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) if (Math.random() < P)
+          edges.push({ id: eid(nodes[i].id, nodes[j].id), u: nodes[i].id, v: nodes[j].id, w: 1 + Math.floor(Math.random() * 20) });
+        draw();
+      };
+
+      // ===== Zoom / Pan / Recentrar =====
+      let isPanning = false, lastX = 0, lastY = 0;
+      canvas.addEventListener("wheel", ev => {
+        ev.preventDefault();
+        const factor = ev.deltaY > 0 ? 0.9 : 1.1;
+        zoom = Math.max(0.4, Math.min(2.5, zoom * factor));
+        svg.setAttribute("transform", `translate(${panX},${panY}) scale(${zoom})`);
+        document.getElementById("chip-zoom").textContent = Math.round(zoom * 100) + "%";
+      });
+      canvas.addEventListener("mousedown", ev => { if (ev.button === 1) { isPanning = true; lastX = ev.clientX; lastY = ev.clientY; } });
+      canvas.addEventListener("mouseup", () => isPanning = false);
+      canvas.addEventListener("mousemove", ev => {
+        if (isPanning) {
+          panX += ev.clientX - lastX; panY += ev.clientY - lastY;
+          svg.setAttribute("transform", `translate(${panX},${panY}) scale(${zoom})`);
+          lastX = ev.clientX; lastY = ev.clientY;
+          document.getElementById("chip-pos").textContent = Math.round(panX) + "," + Math.round(panY);
+        }
+      });
+      document.getElementById("btn-recenter").onclick = () => { panX = 0; panY = 0; zoom = 1; svg.setAttribute("transform", "scale(1)"); document.getElementById("chip-zoom").textContent = "100%"; document.getElementById("chip-pos").textContent = "0,0"; };
+
+      // ===== Velocidad =====
+      speedRange.oninput = () => { animSpeed = +speedRange.value; speedLabel.textContent = (animSpeed / 100).toFixed(1) + "×"; };
+
+      // ===== Avatares =====
+      function makeCar(color) {
+        const g = el("g", { transform: "translate(-100,-100)" });
+        const neon = el("ellipse", { cx: 0, cy: 10, rx: 18, ry: 6, fill: color, class: "car-neon" });
+        const body = el("rect", { x: -18, y: -8, width: 36, height: 16, rx: 4, ry: 4, fill: color, class: "car-body" });
+        const window = el("rect", { x: -10, y: -6, width: 20, height: 8, class: "car-window" });
+        const spoiler = el("rect", { x: -14, y: -10, width: 28, height: 3, class: "car-spoiler" });
+        const wheel1 = el("circle", { cx: -12, cy: 8, r: 4, class: "car-wheel" });
+        const wheel2 = el("circle", { cx: 12, cy: 8, r: 4, class: "car-wheel" });
+        const head1 = el("circle", { cx: 18, cy: -3, r: 2, fill: "#fffceb" }), head2 = el("circle", { cx: 18, cy: 3, r: 2, fill: "#fffceb" });
+        g.append(neon, spoiler, body, window, wheel1, wheel2, head1, head2); return g;
+      }
+      function makePerson(color) {
+        const g = el("g", { transform: "translate(-100,-100)" });
+        const head = el("circle", { cx: 0, cy: -8, r: 5, class: "person-head" });
+        const body = el("line", { x1: 0, y1: -3, x2: 0, y2: 10, class: "person-body" });
+        const armL = el("line", { x1: 0, y1: 0, x2: -7, y2: 6, class: "person-body" });
+        const armR = el("line", { x1: 0, y1: 0, x2: 7, y2: 6, class: "person-body" });
+        const legL = el("line", { x1: 0, y1: 10, x2: -6, y2: 18, class: "person-body" });
+        const legR = el("line", { x1: 0, y1: 10, x2: 6, y2: 18, class: "person-body" });
+        const aura = el("circle", { cx: 0, cy: 4, r: 18, fill: color, opacity: .15 });
+        g.append(aura, head, body, armL, armR, legL, legR); return g;
+      }
+      function makeBike(color) {
+        const g = el("g", { transform: "translate(-100,-100)" });
+        const w1 = el("circle", { cx: -10, cy: 8, r: 6, class: "bike-wheel" }), w2 = el("circle", { cx: 10, cy: 8, r: 6, class: "bike-wheel" });
+        const frame = el("path", { d: "M-10 8 L0 0 L10 8 L-3 8 Z", stroke: color, fill: "none", "stroke-width": "2" });
+        const seat = el("rect", { x: -1, y: -2, width: 6, height: 2, fill: color });
+        const rider = el("circle", { cx: 0, cy: -4, r: 3, fill: "#ffd8a8" });
+        const aura = el("circle", { cx: 0, cy: 4, r: 18, fill: color, opacity: .12 });
+        g.append(aura, w1, w2, frame, seat, rider); return g;
+      }
+      function makeAvatar(mode, color) {
+        if (mode === "walk") return makePerson(color);
+        if (mode === "bike") return makeBike(color);
+        return makeCar(color);
+      }
+
+      // ===== Presentación y atajos =====
+      document.getElementById("btn-present").onclick = (e) => {
+        const on = document.body.classList.toggle("presentation");
+        e.target.setAttribute("aria-pressed", on);
+      };
+      window.addEventListener("keydown", ev => {
+        if (ev.target.tagName === "INPUT" || ev.target.tagName === "SELECT") return;
+        switch (ev.key.toLowerCase()) {
+          case "n": mode = "add"; break;
+          case "c": mode = "connect"; break;
+          case "m": mode = "move"; break;
+          case "d": mode = "delete"; break;
+          case "r": panX = panY = 0; zoom = 1; svg.setAttribute("transform", "scale(1)"); break;
+          case "escape": connectFirst = null; selectedNode = null; break;
+          case "p": toggleStepper(); break;
+        }
+      });
+
+      // ===== Init =====
+      setTravelMode("walk");
+      draw(); updateStats(); updateSelects();
+
+      // ===== DIJKSTRA =====
+      function dijkstraAll(start, end) {
+        const ids = nodes.map(n => n.id), adj = new Map(ids.map(i => [i, []]));
+        for (const e of edges) {
+          adj.get(e.u).push([e.v, e.w]);
+          if (!directed) adj.get(e.v).push([e.u, e.w]);
+        }
+        const dist = new Map(ids.map(i => [i, Infinity])),
+          prev = new Map(ids.map(i => [i, []])),
+          vis = new Set();
+        dist.set(start, 0);
+        while (vis.size < ids.length) {
+          let u = null, best = Infinity;
+          for (const id of ids) if (!vis.has(id) && dist.get(id) < best) { best = dist.get(id); u = id; }
+          if (!u) break;
+          vis.add(u);
+          for (const [v, w] of adj.get(u)) {
+            const alt = dist.get(u) + w;
+            if (alt < dist.get(v)) { dist.set(v, alt); prev.set(v, [u]); }
+            else if (alt === dist.get(v)) { prev.get(v).push(u); }
+          }
+        }
+        if (dist.get(end) === Infinity) return { paths: [], cost: Infinity, dist, prev };
+        const paths = [];
+        (function backtrack(c, acc) {
+          if (c === start) { paths.push([start, ...acc]); return; }
+          for (const p of (prev.get(c) || [])) backtrack(p, [c, ...acc]);
+        })(end, []);
+        return { paths, cost: dist.get(end), dist, prev };
+      }
+
+      // ===== Animación =====
+      function buildPts(path) {
+        const pts = [];
+        for (let i = 0; i < path.length - 1; i++) {
+          const a = byId(path[i]), b = byId(path[i + 1]);
+          const steps = Math.max(10, Math.hypot(b.x - a.x, b.y - a.y) / 6);
+          const ang = Math.atan2(b.y - a.y, b.x - a.x);
+          for (let t = 0; t <= 1; t += 1 / steps) pts.push([a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, ang]);
+        }
+        return pts;
+      }
+      async function animateMover(elem, pts, mode, color, idx, end) {
+        const scale = speedScale[mode] || 1;
+        for (const [x, y, a] of pts) {
+          elem.setAttribute("transform", `translate(${x},${y}) rotate(${a * 180 / Math.PI})`);
+          await new Promise(r => setTimeout(r, 1000 / (animSpeed * scale)));
+        }
+        playDing();
+        showArrival(end, color, idx);
+      }
+      function showArrival(id, color, i) {
+        const n = byId(id);
+        const msg = document.createElement("div");
+        msg.className = "arrival-msg";
+        msg.style.position = "absolute";
+        msg.style.left = n.x + "px"; msg.style.top = n.y + "px";
+        msg.style.background = color; msg.style.color = "#fff";
+        msg.style.padding = ".3rem .6rem"; msg.style.borderRadius = "8px";
+        msg.textContent = `Ruta ${i + 1} completada ✅`;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2500);
+      }
+
+      // ===== Calcular y simular =====
+      document.getElementById("btn-calc").onclick = () => {
+        const s = document.getElementById("start").value,
+          t = document.getElementById("end").value;
+        if (!s || !t || s === t) return alert("Selecciona nodos diferentes.");
+        if (nodes.length === 0 || edges.length === 0) return alert("No hay grafo para calcular.");
+
+        const { paths, cost } = dijkstraAll(s, t);
+        if (!paths.length) return alert("No hay ruta entre esos nodos.");
+
+        // limpiar avatares y redibujar
+        movers = []; draw();
+
+        // Resumen con tiempos por modo
+        const perHop = perHopMinutes[travelMode];
+        const decorated = paths.map((seq, i) => {
+          const hops = seq.length - 1;
+          const minutes = hops * perHop;
+          return { seq, color: COLORS[i % COLORS.length], cost, hops, minutes };
+        });
+
+        alert(`Modo: ${travelMode === "walk" ? "A pie" : travelMode === "bike" ? "Bici" : "Auto"}\n` +
+          decorated.map((p, i) => `R${i + 1}: ${p.seq.join(" → ")} · ${p.hops} saltos · ~${p.minutes} min`).join("\n"));
+
+        // animar
+        decorated.forEach((p, i) => {
+          const mover = { elem: makeAvatar(travelMode, p.color), color: p.color };
+          movers.push(mover); svg.appendChild(mover.elem);
+          const pts = buildPts(p.seq);
+          setTimeout(() => animateMover(mover.elem, pts, travelMode, p.color, i, p.seq[p.seq.length - 1]), i * 900);
+        });
+      };
+
+      // ===== Paso a paso (P) =====
+      function toggleStepper() {
+        const st = document.getElementById("stepper");
+        if (st.classList.contains("visible")) { st.classList.remove("visible"); return; }
+        const s = document.getElementById("start").value, t = document.getElementById("end").value;
+        if (!s || !t || s === t) return alert("Selecciona nodos diferentes.");
+        const data = dijkstraAll(s, t);
+        const tbody = document.querySelector("#step-table tbody");
+        tbody.innerHTML = "";
+        for (const id of nodes.map(n => n.id)) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${id}</td><td>${data.dist.get(id)}</td><td>${(data.prev.get(id) || []).join(",")}</td>`;
+          tbody.appendChild(tr);
+        }
+        document.getElementById("step-current").textContent = s + " → " + t;
+        document.getElementById("step-queue").textContent = "(vista estática simplificada)";
+        st.classList.add("visible");
+      }
+      document.getElementById("step-close").onclick = () => document.getElementById("stepper").classList.remove("visible");
+
+      // ===== Exportar / Importar JSON =====  (Mapas)
+      const MAPS_KEY = "dijkstra_v5_maps";
+      function renderSavedMaps() {
+        const list = document.getElementById("saved-list");
+        list.innerHTML = "";
+        const items = JSON.parse(localStorage.getItem(MAPS_KEY) || "[]");
+        if (!items.length) { list.textContent = "(sin historial)"; return; }
+        items.slice(0, 8).forEach((m, i) => {
+          const div = document.createElement("div");
+          const date = new Date(m.savedAt || Date.now()).toLocaleString();
+          div.innerHTML = `${i + 1}) <b>${m.name}</b> · ${m.nodes?.length || 0}N/${m.edges?.length || 0}E · ${date}`;
+          list.appendChild(div);
+        });
+      }
+      renderSavedMaps();
+
+      document.getElementById("btn-save-map").onclick = () => {
+        if (!nodes.length) return alert("No hay nada que guardar.");
+        const defaultName = "Mapa_" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        const name = prompt("Nombre del mapa (.json):", defaultName);
+        if (!name) return;
+        const payload = { version: 5, name, directed, nodes, edges };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = (name.endsWith(".json") ? name : `${name}.json`); a.click();
+        const items = JSON.parse(localStorage.getItem(MAPS_KEY) || "[]");
+        items.unshift({ name, directed, nodes, edges, savedAt: Date.now() });
+        if (items.length > 50) items.pop();
+        localStorage.setItem(MAPS_KEY, JSON.stringify(items));
+        renderSavedMaps();
+        alert("Mapa guardado ✅");
+      };
+
+      document.getElementById("btn-load-map").onclick = () => document.getElementById("map-file").click();
+      document.getElementById("map-file").addEventListener("change", (ev) => {
+        const file = ev.target.files[0]; if (!file) return;
+        const fr = new FileReader();
+        fr.onload = () => {
+          try {
+            const data = JSON.parse(fr.result);
+            if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) throw new Error();
+            nodes = data.nodes; edges = data.edges; directed = !!data.directed;
+            nextChar = calcNextChar(nodes);
+            movers = []; draw(); updateSelects(); updateStats();
+            alert(`Mapa cargado ✅ (${nodes.length} nodos, ${edges.length} aristas)`);
+          } catch { alert("JSON inválido: { nodes:[], edges:[], directed? }"); }
+        };
+        fr.readAsText(file);
+        ev.target.value = "";
+      });
+
+      document.getElementById("btn-clear-maps").onclick = () => {
+        localStorage.removeItem(MAPS_KEY);
+        renderSavedMaps();
+        alert("Historial de mapas borrado.");
+      };
+
+      // ===== Exportar PNG / SVG =====
+      function serializeSVG() {
+        const clone = document.getElementById("graph").cloneNode(true);
+        clone.removeAttribute("style");
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        return new XMLSerializer().serializeToString(clone);
+      }
+      document.getElementById("btn-export-svg").onclick = () => {
+        const data = serializeSVG();
+        const blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "grafo_v5.svg";
+        a.click();
+      };
+      document.getElementById("btn-export-png").onclick = () => {
+        const data = serializeSVG();
+        const img = new Image();
+        const url = URL.createObjectURL(new Blob([data], { type: "image/svg+xml" }));
+        img.onload = () => {
+          const canvasEl = document.createElement("canvas");
+          canvasEl.width = 1200; canvasEl.height = 720;
+          const ctx = canvasEl.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          const a = document.createElement("a");
+          a.download = "grafo_v5.png";
+          a.href = canvasEl.toDataURL("image/png");
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      };
+
+      // ===== Sonido =====
+      let __audioCtx;
+      function playDing() {
+        try {
+          __audioCtx = __audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const ctx = __audioCtx, now = ctx.currentTime;
+          const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
+          o1.type = "sine"; o2.type = "triangle";
+          o1.frequency.setValueAtTime(880, now);
+          o2.frequency.setValueAtTime(1320, now);
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, now);
+          g.gain.exponentialRampToValueAtTime(0.4, now + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+          o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+          o1.start(now); o2.start(now); o1.stop(now + 0.6); o2.stop(now + 0.6);
+        } catch (e) { }
+      }
+
+      console.log("✅ V5 con modos de viaje (persona/bici/auto) y tiempos por salto.");
+    });
+  </script>
+</body>
+
+</html>

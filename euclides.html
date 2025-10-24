@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCD con Método de Euclides (n números)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0B0829;
+            /* Bleu Oxford */
+            --panel: #F9DFC6;
+            /* Amande */
+            --ink: #0B0829;
+            /* Bleu Oxford para texto principal */
+            --muted: #8FA0D8;
+            /* Vista Bleu para texto secundario */
+            --accent: #FF8400;
+            /* Orange para acentos */
+            --accent-2: #8FA0D8;
+            /* Vista Bleu para acentos secundarios */
+            --danger: #ff6b6b;
+            /* Mantenemos rojo para errores */
+            --ok: #1dd1a1;
+            /* Mantenemos verde para éxito */
+            --chip: #F9DFC6;
+            /* Amande para chips */
+            --border: #8FA0D8;
+            /* Vista Bleu para bordes */
+            --highlight: #1A1540;
+            /* Variación más clara del Bleu Oxford */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Lexend', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+            color: var(--ink);
+            background: radial-gradient(80vw 80vh at 100% 0%, var(--highlight) 0%, var(--bg) 50%);
+            font-weight: 400;
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 16px 64px;
+        }
+
+        header {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 600;
+            letter-spacing: .3px;
+            color: var(--panel);
+            /* Usar color Amande para contraste */
+        }
+
+        h2 {
+            font-weight: 500;
+            letter-spacing: .2px;
+        }
+
+        h3 {
+            font-weight: 500;
+            letter-spacing: .1px;
+        }
+
+        .subtitle {
+            color: var(--accent-2);
+            /* Vista Bleu para mejor contraste */
+            font-size: .98rem;
+            font-weight: 400;
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(249, 223, 198, .95), rgba(249, 223, 198, .85));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: none;
+            /* Remover sombreado */
+            margin-bottom: 25px;
+        }
+
+        .row {
+            display: grid;
+            gap: 12px;
+        }
+
+        .row.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .row.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 780px) {
+
+            .row.cols-2,
+            .row.cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .input input[type=number] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--ink);
+            font-size: 1rem;
+            appearance: textfield;
+            /* hide spinners in some browsers */
+        }
+
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn {
+            border: 2px solid var(--border);
+            background: linear-gradient(180deg, var(--panel), rgba(249, 223, 198, 0.8));
+            color: var(--ink);
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            letter-spacing: .2px;
+            transition: all 0.2s ease;
+            font-family: 'Lexend', sans-serif;
+            box-shadow: none;
+            /* Sin sombreado */
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0px);
+        }
+
+        .btn.secondary {
+            background: var(--highlight);
+            color: var(--panel);
+            border-color: var(--highlight);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 2px dashed var(--accent-2);
+            color: var(--accent-2);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn.ghost:hover {
+            background: rgba(143, 160, 216, 0.1);
+            border-style: solid;
+            filter: brightness(1.2);
+        }
+
+        .btn.accent {
+            background: var(--accent);
+            color: var(--panel);
+            /* Usar color Amande para mejor contraste con el naranja */
+            font-weight: 600;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: var(--chip);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .chip .x {
+            display: inline-grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--highlight);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            color: var(--panel);
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .error {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: .92rem;
+        }
+
+        .steps {
+            display: grid;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .stage {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .stage>header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--highlight);
+            color: var(--panel);
+        }
+
+        .stage h3 {
+            margin: 0;
+            font-size: 1.02rem;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px dashed var(--border);
+            text-align: left;
+        }
+
+        th {
+            color: var(--ink);
+            font-weight: 700;
+            background: var(--highlight);
+            position: sticky;
+            top: 0;
+        }
+
+        tr.done {
+            background: linear-gradient(90deg, rgba(61, 213, 176, .08), transparent);
+        }
+
+        tr.done td.last {
+            font-weight: 800;
+            color: var(--accent-2);
+        }
+
+        .result {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result .value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--accent-2);
+        }
+
+        .footer-tools {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        /* Estilos para el algoritmo de Euclides visual */
+        .euclides-visual {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 25px;
+            margin: 25px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            flex-wrap: wrap;
+        }
+
+        .division-table {
+            display: grid;
+            gap: 1px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            background: var(--panel);
+            box-shadow: none;
+            /* Remover sombreado */
+        }
+
+        .quotient {
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding: 12px 8px 8px 8px;
+            background: rgba(255, 132, 0, 0.15);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .dividend,
+        .divisor {
+            text-align: center;
+            font-weight: bold;
+            padding: 12px 8px;
+            background: var(--highlight);
+            border-bottom: 2px solid var(--border);
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .dividend {
+            background: rgba(143, 160, 216, 0.2);
+            color: var(--highlight);
+        }
+
+        .residue {
+            text-align: center;
+            font-weight: 600;
+            color: var(--danger);
+            padding: 12px 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 107, 107, 0.1);
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .division-arrow {
+            font-size: 28px;
+            color: var(--accent);
+            margin: 0 15px;
+            align-self: center;
+        }
+
+        .final-result {
+            background: linear-gradient(90deg, rgba(143, 160, 216, .25), rgba(143, 160, 216, .15));
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: none;
+            /* Remover sombreado */
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(90deg, var(--accent), #ffa64d);
+            color: var(--ink);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .8rem;
+            padding: .8rem 1rem;
+            border-bottom: 2px solid #e8a86b;
+            font-weight: 800;
+        }
+
+        .site-header a {
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .site-header .badge {
+            background: var(--ink);
+            color: var(--panel);
+            border-radius: 999px;
+            padding: .2rem .6rem;
+            font-size: .8rem;
+            font-weight: 800;
+        }
+
+        .site-header .header-right {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <a href="home.html">🏠 Home</a>
+        <div class="header-right">
+            <span>Diagrama de Euclides</span>
+
+            <span class="badge">Interactivo + Educativo</span>
+        </div>
+    </header>
+    <div class="app">
+
+
+        <section class="card" aria-labelledby="ingreso">
+            <h2 id="ingreso" style="margin-top:0">1) Ingresar números</h2>
+            <div class="row cols-2">
+                <div class="controls">
+                    <label class="input" aria-label="Agregar número entero">
+                        <span>➕</span>
+                        <input id="numberInput" type="number" inputmode="numeric" step="1" placeholder="Ej: 252" />
+                    </label>
+                    <button class="btn accent" id="btnAdd">Agregar</button>
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn ghost" id="btnClear">Limpiar</button>
+                </div>
+            </div>
+            <div class="chips" id="numbersList" style="margin-top:12px"></div>
+            <div id="errorBox" class="error" role="alert" style="margin-top:8px; display:none"></div>
+        </section>
+
+        <section class="card" aria-labelledby="calc">
+            <h2 id="calc" style="margin-top:0">2) Calcular MCD</h2>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+                <button class="btn accent" id="btnCompute">Calcular MCD</button>
+            </div>
+            <div id="output" class="steps"></div>
+        </section>
+
+        <div class="footer-tools">
+            <button class="btn" id="btnPrint">Imprimir / Guardar PDF</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ---- Estado ------------------------------------------------------------
+        const state = { numbers: [] };
+
+        // ---- Utilidades --------------------------------------------------------
+        const $ = sel => document.querySelector(sel);
+        const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+        function showError(msg) { const el = $('#errorBox'); el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+        function clearError() { showError(""); }
+
+        function renderNumbers() {
+            const list = $('#numbersList');
+            list.innerHTML = '';
+            state.numbers.forEach((n, i) => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.innerHTML = `<span>${n}</span> <button class="x" title="Quitar" data-i="${i}">×</button>`;
+                list.appendChild(chip);
+            });
+            list.addEventListener('click', ev => {
+                const btn = ev.target.closest('button.x');
+                if (!btn) return;
+                const idx = +btn.dataset.i;
+                state.numbers.splice(idx, 1);
+                renderNumbers();
+            }, { once: true });
+        }
+
+
+
+        function addNumber(n) {
+            if (!Number.isFinite(n)) return;
+            if (!Number.isInteger(n)) n = Math.trunc(n);
+            if (Math.abs(n) > Number.MAX_SAFE_INTEGER) return showError('Número demasiado grande.');
+            state.numbers.push(n);
+            renderNumbers();
+            clearError();
+        }
+
+        // ---- Algoritmo de Euclides (divisiones) -------------------------------
+        function gcd2WithSteps(a, b) {
+            // Convenciones y casos borde
+            a = Math.abs(a); b = Math.abs(b);
+
+            // Asegurar que a >= b (el mayor siempre afuera)
+            if (a < b) {
+                [a, b] = [b, a]; // Intercambiar valores
+            }
+
+            const steps = [];
+            if (a === 0 && b === 0) return { gcd: 0, steps: [{ a: 0, b: 0, q: 0, r: 0 }] };
+            if (b === 0) return { gcd: a, steps: [{ a, b: 0, q: 0, r: 0 }] };
+
+            while (b !== 0) {
+                const q = Math.floor(a / b);
+                const r = a % b;
+                steps.push({ a, b, q, r });
+                a = b; b = r;
+            }
+            return { gcd: a, steps };
+        }
+
+        function gcdNWithStages(nums) {
+            const arr = nums.map(n => Math.abs(Math.trunc(n))).filter(n => Number.isFinite(n));
+            if (arr.length < 2) return { gcd: null, stages: [], error: 'Necesitas al menos 2 números.' };
+            let g = arr[0];
+            const stages = [];
+            for (let i = 1; i < arr.length; i++) {
+                const cur = arr[i];
+                const res = gcd2WithSteps(g, cur);
+                stages.push({ index: i, a: g, b: cur, ...res });
+                g = res.gcd;
+            }
+            return { gcd: g, stages };
+        }
+
+        // ---- Render de pasos ---------------------------------------------------
+        function renderStages(result) {
+            const out = $('#output');
+            out.innerHTML = '';
+            if (result.error) { showError(result.error); return; } else clearError();
+
+            result.stages.forEach((st, idx) => {
+                const card = document.createElement('article');
+                card.className = 'stage';
+                const title = `Etapa ${idx + 1}: mcd(${st.a}, ${st.b})`;
+
+                // Crear la visualización del algoritmo de Euclides
+                const euclidesHTML = createEuclidesVisualization(st.steps);
+
+                card.innerHTML = `
+          <header>
+            <h3>${title}</h3>
+            <span class="badge">Resultado parcial: <strong>${st.gcd}</strong></span>
+          </header>
+          <div class="euclides-visual">
+            ${euclidesHTML}
+          </div>
+          <div class="final-result">
+            <strong>Resultado:</strong> Cuando el residuo es 0, el MCD es <span style="color: var(--accent-2); font-weight: bold;">${st.gcd}</span>
+          </div>
+        `;
+                out.appendChild(card);
+            });
+
+            renderFinalResult(out, result);
+        }
+
+        function createEuclidesVisualization(steps) {
+            if (steps.length === 0) return '';
+
+            const numSteps = steps.length;
+
+            // Crear la estructura de la tabla de división como en las imágenes
+            let html = `
+        <div class="division-table" style="grid-template-columns: repeat(${numSteps + 1}, 80px); gap: 1px;">
+          <!-- Fila de cocientes -->`;
+
+            // Espacio vacío en la primera celda, luego los cocientes
+            html += '<div class="quotient" style="background: transparent; border: none;"></div>';
+            steps.forEach(step => {
+                html += `<div class="quotient">${step.q}</div>`;
+            });
+
+            // Fila principal con divisores y dividendos 
+            steps.forEach((step, index) => {
+                if (index === 0) {
+                    html += `<div class="dividend" style="border-right: 2px solid var(--border);">${step.a}</div>`;
+                    html += `<div class="divisor">${step.b}</div>`;
+                } else {
+                    html += `<div class="divisor">${step.b}</div>`;
+                }
+            });
+
+            // Fila de residuos
+            html += '<div style="grid-column: 1; background: transparent;"></div>'; // Espacio vacío
+            steps.forEach(step => {
+                html += `<div class="residue">${step.r}</div>`;
+            });
+
+            html += '</div>';
+
+            // Mostrar el proceso paso a paso con flechas
+            html += '<div class="division-arrow">→</div>';
+            html += '<div style="max-width: 400px; text-align: left;">';
+            html += '<div style="color: var(--muted); font-size: 0.9rem; line-height: 1.6;">';
+            html += '<div><span style="color: var(--accent);">cocientes</span></div>';
+            html += '<div style="margin-bottom: 8px;"><span style="color: var(--danger);">residuos</span></div>';
+
+            steps.forEach((step, i) => {
+                if (step.r === 0) {
+                    html += `<div style="color: var(--accent-2); font-weight: 900;">${step.a} ÷ ${step.b} = ${step.q} resto <strong>${step.r}</strong> ← Fin</div>`;
+                } else {
+                    html += `<div style="font-weight: 900;">${step.a} ÷ ${step.b} = ${step.q} resto ${step.r}</div>`;
+                }
+            });
+
+            html += '</div></div>';
+
+            return html;
+        }
+
+        function renderFinalResult(out, result) {
+            const final = document.createElement('div');
+            final.className = 'result';
+            final.innerHTML = `<div><strong>Resultado final:</strong> mcd(${state.numbers.join(', ')})  = </div><div class="value">${result.gcd}</div>`;
+            out.appendChild(final);
+        }
+
+
+
+        // ---- Eventos -----------------------------------------------------------
+        $('#btnAdd').addEventListener('click', () => {
+            const v = $('#numberInput').value.trim();
+            if (!v) return;
+            addNumber(Number(v));
+            $('#numberInput').value = '';
+            $('#numberInput').focus();
+        });
+        $('#numberInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') $('#btnAdd').click();
+        });
+
+        $('#btnClear').addEventListener('click', () => { state.numbers = []; renderNumbers(); clearError(); $('#output').innerHTML = ''; });
+
+        $('#btnCompute').addEventListener('click', () => {
+            if (state.numbers.length < 2) return showError('Agrega al menos 2 números.');
+            const result = gcdNWithStages(state.numbers);
+            if (result.error) return showError(result.error);
+            renderStages(result);
+        });
+
+        $('#btnPrint').addEventListener('click', () => window.print());
+
+        // Demo inicial
+        renderNumbers();
+    </script>
+</body>
+
+</html>

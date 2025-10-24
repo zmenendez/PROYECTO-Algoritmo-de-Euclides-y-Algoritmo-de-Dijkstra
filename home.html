@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home — Algoritmos de Dijkstra y Euclides</title>
+
+  <style>
+    :root {
+      --orange: #FF8400;
+      --vista: #8FA0D8;
+      --amande: #F9DFC6;
+      --oxford: #0B0829;
+      --panel-bg: #0c0a2f;
+      --panel-border: #6e7ec5;
+      --muted: #A7B0D8;
+      --ink: #120d2e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      background: radial-gradient(1200px 800px at 50% 10%, #0e0b34 0%, var(--oxford) 55%);
+      color: var(--amande);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Encabezado simple */
+    header {
+      background: linear-gradient(90deg, var(--orange), #ffa64d);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: .9rem 1rem;
+      border-bottom: 2px solid #e8a86b;
+      font-weight: 900;
+    }
+
+    /* Contenido principal */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.2rem
+    }
+
+    /* Intro/Hero */
+    .intro {
+      width: min(1100px, 95vw);
+      margin: 0 auto;
+      background: linear-gradient(180deg, var(--panel-bg), #08071e 85%);
+      border: 2px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 1.1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .intro h1 {
+      color: #ffddb9;
+      font-size: 1.25rem;
+      letter-spacing: .2px;
+      line-height: 1.2
+    }
+
+    .intro p {
+      color: var(--muted);
+      line-height: 1.6
+    }
+
+    .intro .grid {
+      display: grid;
+      gap: .8rem;
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .intro .col {
+      grid-column: span 6;
+    }
+
+    @media (max-width: 880px) {
+      .intro .col {
+        grid-column: span 12
+      }
+    }
+
+    .box {
+      background: #0b0f2c;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: .8rem;
+      display: flex;
+      flex-direction: column;
+      gap: .45rem
+    }
+
+    .box h3 {
+      color: #ffddb9;
+      font-size: 1rem
+    }
+
+    .box ul {
+      color: #dfe6ff;
+      margin-left: 1rem;
+      line-height: 1.5;
+      font-size: .95rem
+    }
+
+    .krow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem
+    }
+
+    .k {
+      background: #0b0f2c;
+      border: 1px solid #5f6fbf;
+      color: #e6edff;
+      border-radius: 999px;
+      padding: .18rem .6rem;
+      font-size: .8rem;
+      font-weight: 800
+    }
+
+    /* Tarjetas principales */
+    .grid-cards {
+      width: min(1100px, 95vw);
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 820px) {
+      .grid-cards {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel-bg), #08071e 85%);
+      border: 2px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+      min-height: 280px;
+    }
+
+    .card h2 {
+      color: #ffddb9;
+      font-size: 1.25rem;
+      letter-spacing: .2px
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.55
+    }
+
+    .card ul {
+      color: #dfe6ff;
+      line-height: 1.45;
+      font-size: .95rem;
+      margin-left: 1.1rem
+    }
+
+    .btn {
+      margin-top: auto;
+      align-self: flex-start;
+      background: var(--orange);
+      color: var(--ink);
+      border: none;
+      border-radius: 12px;
+      padding: .6rem .95rem;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 0 #c66c00;
+      transition: transform .05s ease
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid #2c3164;
+      color: #b9c2f0;
+      font-size: .9rem;
+      padding: .8rem 1rem;
+      text-align: center;
+    }
+
+    .brand-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+      display: left;
+      margin-right: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <span><img src="img/Umg.png" alt="Logo umg" class="brand-img"></span>
+    <span>Diagramas de Dijkstra y Euclides</span>
+
+  </header>
+
+  <main>
+    <!-- Breve explicación general y temas -->
+    <section class="intro" aria-labelledby="intro-title">
+      <h1 id="intro-title">¿Qué hace esta página?</h1>
+      <p>
+        Este sitio reúne dos componentes educativos: un visualizador interactivo para calcular
+        <b>rutas más cortas con Dijkstra</b> en grafos ponderados y un módulo para estudiar el
+        <b>algoritmo de Euclides</b> que obtiene el máximo común divisor (MCD). Ambos permiten comprender
+        conceptos clave de algoritmos, estructuras de datos y análisis de complejidad.
+      </p>
+
+      <div class="grid">
+        <div class="col">
+          <div class="box">
+            <h3>Temas esenciales que verás</h3>
+            <ul>
+              <li><b>Grafos y pesos:</b> nodos, aristas, pesos no negativos, densidad y conectividad.</li>
+              <li><b>Caminos mínimos:</b> distancias, predecesores y reconstrucción de rutas.</li>
+              <li><b>Complejidad:</b> Dijkstra O(E log V) con cola de prioridad; O(V²) en implementación simple.</li>
+              <li><b>Restricciones:</b> Dijkstra requiere pesos no negativos; para negativos se emplea Bellman–Ford.
+              </li>
+              <li><b>Euclides (MCD):</b> reemplazos sucesivos (a, b) → (b, a mod b); complejidad O(log min(a,b)).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="box">
+            <h3>Aplicaciones prácticas</h3>
+            <ul>
+              <li><b>Navegación y redes:</b> cálculo de rutas eficientes, ruteo de paquetes, costos mínimos.</li>
+              <li><b>Planificación:</b> logística, mapas, juegos con mapas o grafos de estados.</li>
+              <li><b>Criptografía & números:</b> MCD para simplificar fracciones y generar claves (RSA).</li>
+              <li><b>Exportación y pruebas:</b> guardar grafos y rutas como JSON, exportar imágenes.</li>
+            </ul>
+            <div class="krow" aria-hidden="true" style="margin-top:.35rem">
+              <span class="k">Dijkstra</span><span class="k">Euclides</span><span class="k">Pesos ≥ 0</span>
+              <span class="k">Rutas</span><span class="k">MCD</span><span class="k">Complejidad</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dos tarjetas con botón a cada página -->
+    <section class="grid-cards" aria-label="Selección de algoritmos">
+      <article class="card" aria-labelledby="dijkstra-title">
+        <h2 id="dijkstra-title">Algoritmo de Dijkstra (rutas más cortas)</h2>
+        <p>
+          Encuentra el costo mínimo desde un origen hacia los demás nodos en un grafo con pesos no negativos.
+          Mantiene una distancia mínima conocida para cada nodo y expande el no visitado con menor distancia.
+        </p>
+        <ul>
+          <li>Entrada: grafo ponderado y nodo inicial.</li>
+          <li>Salida: distancias mínimas y predecesores para reconstruir rutas.</li>
+          <li>Usos: navegación, redes, planificación de rutas.</li>
+        </ul>
+        <!-- Actualiza el href con tu ruta real del proyecto de Dijkstra -->
+        <a class="btn" href="dijkstra_pro_v6.html">Abrir Dijkstra</a>
+      </article>
+
+      <article class="card" aria-labelledby="euclides-title">
+        <h2 id="euclides-title">Algoritmo de Euclides (máximo común divisor)</h2>
+        <p>
+          Calcula el MCD de dos enteros mediante divisiones sucesivas: se repite (a, b) → (b, a mod b)
+          hasta que el residuo sea cero; el último divisor no nulo es el MCD.
+        </p>
+        <ul>
+          <li>Entrada: dos enteros no negativos a, b.</li>
+          <li>Salida: MCD(a, b).</li>
+          <li>Usos: simplificación de fracciones, criptografía, teoría de números.</li>
+        </ul>
+        <!-- Actualiza el href con tu ruta real del proyecto de Euclides -->
+        <a class="btn" href="euclides.html">Abrir Euclides</a>
+      </article>
+    </section>
+  </main>
+
+  <footer>© 2025 — Página de inicio hecho por estudiantes de la Universidad Mariano Galvez de Guatemala.</footer>
+
+</body>
+
+</html>
