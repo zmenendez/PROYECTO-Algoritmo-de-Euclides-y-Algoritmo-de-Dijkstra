@@ -161,7 +161,7 @@ Este proyecto está bajo la licencia especificada en el archivo [LICENSE](LICENS
 ## 🙏 Agradecimientos
 
 - Universidad Mariano Gálvez de Guatemala
-- Profesores del curso de Lógica
+- Profesor del curso Matemática Discreta
 - Comunidad de desarrolladores web educativos
 
 ---
