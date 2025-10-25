@@ -473,7 +473,7 @@
 
 <body>
     <header class="site-header">
-        <a href="home.html">🏠 Home</a>
+        <a href="./index.html">🏠 Home</a>
         <div class="header-right">
             <span>Diagrama de Euclides</span>
 
@@ -487,9 +487,9 @@
             <h2 id="ingreso" style="margin-top:0">1) Ingresar números</h2>
             <div class="row cols-2">
                 <div class="controls">
-                    <label class="input" aria-label="Agregar número entero">
+                    <label class="input" aria-label="Agregar número entero positivo">
                         <span>➕</span>
-                        <input id="numberInput" type="number" inputmode="numeric" step="1" placeholder="Ej: 252" />
+                        <input id="numberInput" type="number" inputmode="numeric" step="1" min="1" placeholder="Ej: 252 (solo números positivos)" />
                     </label>
                     <button class="btn accent" id="btnAdd">Agregar</button>
                 </div>
@@ -547,9 +547,10 @@
 
 
         function addNumber(n) {
-            if (!Number.isFinite(n)) return;
+            if (!Number.isFinite(n)) return showError('Ingrese un número válido.');
             if (!Number.isInteger(n)) n = Math.trunc(n);
-            if (Math.abs(n) > Number.MAX_SAFE_INTEGER) return showError('Número demasiado grande.');
+            if (n <= 0) return showError('Solo se permiten números enteros positivos (mayor que 0).');
+            if (n > Number.MAX_SAFE_INTEGER) return showError('Número demasiado grande.');
             state.numbers.push(n);
             renderNumbers();
             clearError();
